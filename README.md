@@ -1,2 +1,2 @@
 # docminer
-mining documents in Box
+mining documents in Box, live at https://github.com/sbm-it/docminer !
