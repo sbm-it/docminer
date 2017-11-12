@@ -18,7 +18,7 @@ docminer.addFilePicker=function(el){
     pickBoxImg.id="pickBoxImg"
     pickBoxImg.style.cursor="pointer"
     el.appendChild(pickBoxImg)
-    debugger
+    //debugger
 
     pickBoxImg.onclick=function(){
         var boxSelect = new BoxSelect({
@@ -35,28 +35,18 @@ docminer.addFilePicker=function(el){
     }
 }
 
+docminer.auth=function(){
+    localStorage.boxSecurityToken = 'st'+Math.random().toString().slice(2)+Date.now()
+    var url = 'https://account.box.com/api/oauth2/authorize?response_type=code&client_id=lmhp028lnor0shfxxzvk7n1puci688yt&redirect_uri='+location.href+'&state='+localStorage.boxSecurityToken
+    location.href=url
+}
+
 $(function(){
     docminer()
 })
 
 
 
+// reference
+// https://developer.box.com/reference
 
-
-
-/*
-getFromBox.onclick=function(){
-        var boxSelect = new BoxSelect({
-            clientId: "ho63k2awp6akn574ruy9wzazhp106y20",
-            linkType: "direct",
-            multiselect: false
-        })
-        boxSelect.success(function(files) {
-            parentURLinput.value=files[0].url
-            bco = new BCO(parentURLinput.value)
-            //console.log(response);
-        });
-        boxSelect.launchPopup()
-    }
-
-*/
