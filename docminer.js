@@ -18,7 +18,7 @@ docminer.addFilePicker=function(el){
     pickBoxImg.id="pickBoxImg"
     pickBoxImg.style.cursor="pointer"
     el.appendChild(pickBoxImg)
-    debugger
+    //debugger
 
     pickBoxImg.onclick=function(){
         var boxSelect = new BoxSelect({
