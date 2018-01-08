@@ -92,9 +92,47 @@ docminer.getAccessToken=function(){ // get bearer token
 }
 
 docminer.loggedIn=function(){ // assembling UI after OAUTH dance is finished or UI reset is in order
-    var h = '<span style="color:blue">Connected :-)</span>'
+    var h ='<i class="fa fa-book" aria-hidden="true" style="color:green;font-size:x-large"></i> '
+    h += '<span style="color:green">Connected :-)</span>'
     docminerDiv.innerHTML=h 
     headMsg.textContent='connected at '+Date()
+    setTimeout(docminer.UI,1000)
+}
+
+docminer.UI=function(){
+    var h = '<i class="fa fa-book" aria-hidden="true" style="color:green;font-size:x-large" id="bookPrompt"></i> '
+    h += '<input id="inputSearch">'
+    h += '<p id="searchMsg" style="color:navy;font-size:x-small">&nbsp;</p>'
+    h += '<div id="searchDiv"></div>'
+    docminerDiv.innerHTML=h
+    inputSearch.style.width="60%"
+    inputSearch.style.border=0
+    inputSearch.style.color="silver"
+    inputSearch.value='> type query and then Enter'
+    inputSearch.onclick=function(ev){
+        if(this.style.color=="silver"){
+            this.value=''
+        }
+        bookPrompt.style.color='orange'
+        this.style.color='navy'
+         
+    }
+    inputSearch.onkeyup=function(ev){
+        if(ev.keyCode==13){ // Enter
+            bookPrompt.style.color='orange'
+            this.style.color='orange'
+            searchMsg.textContent="searching ..."
+            docminer.search(this.value)
+            
+        }
+        
+    }
+    //debugger
+}
+
+docminer.search=function(q){
+    console.log('searching for "'+q+'" at ',Date())
+    debugger
 }
 
 docminer.addFilePicker=function(el){
@@ -130,9 +168,27 @@ docminer.auth=function(){
     location.href=url
 }
 
+docminer.searchDivs=[]
+
 docminer.search=function(q){
     // ref at https://developer.box.com/reference#searching-for-content
-    debugger
+    // create new Div
+    bookPrompt.style.color='green'
+    setTimeout(_=>{inputSearch.style.color='navy'},1000)
+    $(searchDiv).prepend(docminer.newDiv(q))
+
+    //debugger
+}
+
+docminer.newDiv=function(q){ //creates a search div
+    var div = document.createElement('div')
+    docminer.searchDivs.push(div)
+    var i = docminer.searchDivs.length
+    div.i=i // the Array index would be i-1
+    var h = '[Q#'+i+'] searching for "'+q+'" at '+Date()
+    h += '<hr>'
+    div.innerHTML=h
+    return div
 }
 
 $(function(){
