@@ -118,8 +118,9 @@ docminer.UI=function(){
          
     }
     inputSearch.onkeyup=function(ev){
+        //inputSearch.style.color="orange"
+        bookPrompt.style.color='orange'
         if(ev.keyCode==13){ // Enter
-            bookPrompt.style.color='orange'
             this.style.color='orange'
             searchMsg.textContent="searching ..."
             docminer.search(this.value)
@@ -173,11 +174,59 @@ docminer.searchDivs=[]
 docminer.search=function(q){
     // ref at https://developer.box.com/reference#searching-for-content
     // create new Div
-    bookPrompt.style.color='green'
-    setTimeout(_=>{inputSearch.style.color='navy'},1000)
-    $(searchDiv).prepend(docminer.newDiv(q))
+    setTimeout(_=>{inputSearch.style.color='navy';bookPrompt.style.color='green'},1000)
+    var div = docminer.newDiv(q)
+    searchDiv.prepend(div)
+    docminer.getSearch(q,function(res){
+        var responseDiv = div.querySelector('#responseDiv')
+        responseDiv.innerHTML='' // reset
+        var pre = document.createElement('pre')
+        responseDiv.appendChild(pre)
+        pre.style.fontSize="xx-small"
+        pre.style.color="green"
+        pre.innerHTML=JSON.stringify(res,null,3)
+        //debugger
+    })
+    // time to do teh search work now
 
     //debugger
+}
+
+docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
+    fun=fun||console.log
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "https://api.box.com/2.0/search?query="+q,
+      "method": "GET",
+      "headers": {
+        "Authorization": "Bearer UWJQcHgminC3GD2RBQc4YqPio7Yq80Ya",
+        "Cache-Control": "no-cache",
+        "Postman-Token": "342bb31a-6f78-25f1-4206-df542f0afe04"
+      }
+    }
+
+    $.ajax(settings).done(function (response) {
+      fun(response);
+    });
+
+    /*
+    var data = null;
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+
+    xhr.addEventListener("readystatechange", function () { // callback
+      if (this.readyState === 4) {
+        fun(this);
+      }
+    });
+
+    xhr.open("GET", "https://api.box.com/2.0/search?query="+q);
+    xhr.setRequestHeader("Authorization", "Bearer UWJQcHgminC3GD2RBQc4YqPio7Yq80Ya");
+    xhr.send(data);
+    */
+
 }
 
 docminer.newDiv=function(q){ //creates a search div
@@ -185,9 +234,32 @@ docminer.newDiv=function(q){ //creates a search div
     docminer.searchDivs.push(div)
     var i = docminer.searchDivs.length
     div.i=i // the Array index would be i-1
-    var h = '[Q#'+i+'] searching for "'+q+'" at '+Date()
-    h += '<hr>'
+    var h = '<p>Q#'+i+': <span style="color:green">'+q+'</span> <i id="minDiv" style="color:blue;background-color:yellow;cursor:pointer" class="fa fa-minus-square-o" aria-hidden="true"></i> <i id="closeDiv" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i></p>'
     div.innerHTML=h
+    var responseDiv = document.createElement('div')
+    responseDiv.id="responseDiv"
+    responseDiv.style.color="orange"
+    responseDiv.innerHTML= 'searching ... '+Date()
+    div.appendChild(responseDiv)
+    div.appendChild(document.createElement('hr'))
+    // event driven actions
+    var minDiv = div.querySelector('#minDiv')
+    var closeDiv = div.querySelector('#closeDiv')
+    closeDiv.onclick=function(){
+        this.parentElement.parentElement.parentElement.removeChild(this.parentElement.parentElement)
+        //debugger
+    }
+    minDiv.onclick=function(){
+        if(this.className=="fa fa-minus-square-o"){ //hide
+            this.className="fa fa-plus-square-o"
+            this.style.backgroundColor="cyan"
+            responseDiv.hidden=true
+        }else{
+            this.className="fa fa-minus-square-o"
+            this.style.backgroundColor="yellow"
+            responseDiv.hidden=false
+        }
+    }
     return div
 }
 
