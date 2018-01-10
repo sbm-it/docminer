@@ -200,7 +200,7 @@ docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
       "url": "https://api.box.com/2.0/search?query="+q,
       "method": "GET",
       "headers": {
-        "Authorization": "Bearer UWJQcHgminC3GD2RBQc4YqPio7Yq80Ya",
+        "Authorization": "Bearer "+docminer.boxParms.access_token,
         "Cache-Control": "no-cache",
         "Postman-Token": "342bb31a-6f78-25f1-4206-df542f0afe04"
       }
