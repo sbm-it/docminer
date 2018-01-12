@@ -97,6 +97,8 @@ docminer.loggedIn=function(){ // assembling UI after OAUTH dance is finished or 
     docminerDiv.innerHTML=h 
     headMsg.textContent='connected at '+Date()
     setTimeout(docminer.UI,1000)
+    //start refresh token cycle every ~30 mins
+    docminer.refreshCycle = setInterval(docminer.refreshToken,2000000)
 }
 
 docminer.UI=function(){
@@ -128,7 +130,6 @@ docminer.UI=function(){
         }
         
     }
-    //debugger
 }
 
 docminer.search=function(q){
