@@ -175,11 +175,30 @@ docminer.search=function(q){
     // ref at https://developer.box.com/reference#searching-for-content
     // create new Div
     setTimeout(_=>{inputSearch.style.color='navy';bookPrompt.style.color='green'},1000)
-    var div = docminer.newDiv(q)
+    var div = docminer.newSearchDiv(q)
     searchDiv.prepend(div)
     docminer.getSearch(q,function(res){
+        searchMsg.innerHTML='finished Query #'+div.i+' at '+Date()
         var responseDiv = div.querySelector('#responseDiv')
-        responseDiv.innerHTML='' // reset
+        div.res=res // keeping response in the div, asking for trouble?
+        responseDiv.style.color='navy'
+        // List entries found
+        var h = '<p>'+res.total_count+' entries found, '+res.entries.length+' listed:</p>'
+        responseDiv.innerHTML=h // reset
+        var ol = document.createElement('ol')
+
+        responseDiv.appendChild(ol)
+        res.entries.forEach(function(x,i){
+            var li = document.createElement('li')
+            ol.appendChild(li)
+            var h = x.type+' <a style="background-color:yellow;color:blue" target="_blank" href="https://app.box.com/'+x.type+'/'+x.id+'">'+x.name+'</a>'
+            h += ' created by <a href="mailto:'+x.created_by.login+'">'+x.created_by.name+'</a> dated <span style="color:green" title="'+Date(x.created_at)+'">'+x.created_at.slice(0,x.created_at.indexOf('T'))+'</span>'
+            li.innerHTML=h
+            //debugger
+        })
+        //debugger
+
+        // show raw JSON in a <pre>
         var pre = document.createElement('pre')
         responseDiv.appendChild(pre)
         pre.style.fontSize="xx-small"
@@ -192,12 +211,12 @@ docminer.search=function(q){
     //debugger
 }
 
-docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
-    fun=fun||console.log
-    var settings = {
+docminer.getUrl=function(url,fun){
+
+     var settings = {
       "async": true,
       "crossDomain": true,
-      "url": "https://api.box.com/2.0/search?query="+q,
+      "url": url,
       "method": "GET",
       "headers": {
         "Authorization": "Bearer "+docminer.boxParms.access_token,
@@ -209,6 +228,7 @@ docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
     $.ajax(settings).done(function (response) {
       fun(response);
     });
+
 
     /*
     var data = null;
@@ -222,19 +242,62 @@ docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
       }
     });
 
-    xhr.open("GET", "https://api.box.com/2.0/search?query="+q);
-    xhr.setRequestHeader("Authorization", "Bearer UWJQcHgminC3GD2RBQc4YqPio7Yq80Ya");
+    xhr.open("GET", url);
+    xhr.setRequestHeader("Authorization", "Bearer "+docminer.boxParms.access_token);
+    xhr.setRequestHeader("Cache-Control", "no-cache");
     xhr.send(data);
     */
-
 }
 
-docminer.newDiv=function(q){ //creates a search div
+docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
+    fun=fun||console.log
+    
+    docminer.getUrl(
+        "https://api.box.com/2.0/search?query="+q+"&limit=200",
+        fun
+    )
+}
+
+docminer.refreshToken=function(){
+    
+    var form = new FormData();
+    form.append("grant_type", "refresh_token");
+    form.append("refresh_token", docminer.boxParms.refresh_token);
+    form.append("client_id", docminer.clientId);
+    form.append("client_secret", localStorage.connectBoxAuth);
+
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "https://api.box.com/oauth2/token",
+      "method": "POST",
+      "headers": {
+        "Cache-Control": "no-cache",
+        "Postman-Token": "caa05b3e-071e-6ed0-5c4b-1ca037a39865"
+      },
+      "processData": false,
+      "contentType": false,
+      "mimeType": "multipart/form-data",
+      "data": form
+    }
+
+    $.ajax(settings).done(function (res) {
+        //console.log(res);
+        res = JSON.parse(res)
+        docminer.boxParms.access_token=res.access_token
+        docminer.boxParms.expires_in=res.expires_in
+        docminer.boxParms.refresh_token=res.refresh_token
+        console.log('token refreshed at '+Date()+' for another '+docminer.boxParms.expires_in+' seconds: ')
+        //console.log(res)
+    });
+}
+
+docminer.newSearchDiv=function(q){ //creates a search div
     var div = document.createElement('div')
     docminer.searchDivs.push(div)
     var i = docminer.searchDivs.length
     div.i=i // the Array index would be i-1
-    var h = '<p>Q#'+i+': <span style="color:green">'+q+'</span> <i id="minDiv" style="color:blue;background-color:yellow;cursor:pointer" class="fa fa-minus-square-o" aria-hidden="true"></i> <i id="closeDiv" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i></p>'
+    var h = '<p><b style="color:maroon">Q#'+i+'</b>: <span style="color:green">'+q+'</span> <i id="minDiv" style="color:blue;background-color:yellow;cursor:pointer" class="fa fa-minus-square-o" aria-hidden="true"></i> <i id="closeDiv" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i></p>'
     div.innerHTML=h
     var responseDiv = document.createElement('div')
     responseDiv.id="responseDiv"
