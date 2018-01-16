@@ -221,7 +221,7 @@ docminer.search=function(q){
                 viewIframe.onerror=function(err){
                     console.log('do something about this:',this, err)
                 }
-                debugger
+                
             }
             //debugger
         })
