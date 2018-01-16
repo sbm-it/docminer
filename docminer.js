@@ -93,9 +93,9 @@ docminer.getAccessToken=function(){ // get bearer token
 
 docminer.loggedIn=function(){ // assembling UI after OAUTH dance is finished or UI reset is in order
     var h ='<i class="fa fa-book" aria-hidden="true" style="color:green;font-size:x-large"></i> '
-    h += '<span style="color:green">Connected :-)</span>'
+    h += '<span style="color:green">Connected ...</span>'
     docminerDiv.innerHTML=h 
-    headMsg.textContent='connected at '+Date()
+    headMsg.textContent='connected '+Date()
     setTimeout(docminer.UI,1000)
     //start refresh token cycle every ~30 mins
     docminer.refreshCycle = setInterval(docminer.refreshToken,2000000)
@@ -180,12 +180,72 @@ docminer.search=function(q){
     searchDiv.prepend(div)
     docminer.getSearch(q,function(res){
         searchMsg.innerHTML='finished Query #'+div.i+' at '+Date()
+        res.entries.sort((a,b)=>a.created_at>b.created_at)
+        // var plotDiv = div.querySelector('#plotDiv')
+        // plot time line of documents found
+        //var created_at = res.entries.map(x=>x.created_at)
+        //var modified_at = res.entries.map(x=>x.modified_at)
+        //var y = res.entries.map((x,i)=>i+1)
+        var data = res.entries.map(function(x,i){
+            return {
+                x:[x.created_at,x.modified_at],
+                y:[i+1,i+1],
+                type: 'scatter',
+                mode: 'markers-lines',
+                line:{
+                    color:'blue',
+                    width:1
+                },
+                marker:{
+                    symbol:'cross',
+                    size:3,
+                    color:'blue'
+                }
+            }
+        })
+        /*
+        .push({
+            x:res.entries.map(x=>x.created_at),
+            y:res.entries.map((x,i)=>i+1),
+            type: 'scatter',
+            mode: 'markers',
+            marker:{
+                //symbol:'|',
+                color:'orange',
+                width:1
+            }
+        })
+        */
+         var layout={
+             showlegend: false,
+             height: (50+3*res.entries.length),
+             yaxis: {
+                 range: [0,res.entries.length+1]
+             },
+             margin:{
+                l	:	50,
+                r	:	0,
+                t	:	0,
+                b	:	50
+             }
+         }
+        
+        
+        //debugger
         var responseDiv = div.querySelector('#responseDiv')
         div.res=res // keeping response in the div, asking for trouble?
         responseDiv.style.color='navy'
         // List entries found
-        var h = '<p>'+res.total_count+' entries found, '+res.entries.length+' listed:</p>'
-        responseDiv.innerHTML=h // reset
+        div.querySelector('#entriesFound').textContent=res.total_count+' entries found, '+res.entries.length+' listed'
+        //var h = '<p>'+res.total_count+' entries found, '+res.entries.length+' listed:</p>'
+        //responseDiv.innerHTML=h // reset
+        responseDiv.innerHTML='' // reset
+        if(res.entries.length>3){
+            var plotDiv = document.createElement('div')
+            plotDiv.id="plotDiv"
+            responseDiv.appendChild(plotDiv)
+            Plotly.newPlot(plotDiv, data,layout)
+        }
         var ol = document.createElement('ol')
 
         responseDiv.appendChild(ol)
@@ -195,14 +255,17 @@ docminer.search=function(q){
             var h = x.type+' <a style="background-color:yellow;color:blue" target="_blank" href="https://app.box.com/'+x.type+'/'+x.id+'">'+x.name+'</a>'
             h += ' <i id="openLi" style="color:blue;background-color:cyan;cursor:pointer" class="fa fa-plus-square-o" aria-hidden="true"></i> <i id="killLi" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i>'
             h += ' created by <a href="mailto:'+x.created_by.login+'">'+x.created_by.name+'</a> dated <span style="color:green" title="'+Date(x.created_at)+'">'+x.created_at.slice(0,x.created_at.indexOf('T'))+'</span>'
-            h += ' <iframe id="viewIframe" hidden=true>'
+            //h += ' <iframe id="viewIframe" hidden=true>'
+            h += ' <div id="viewIframe" hidden=true></div>'
             li.innerHTML=h
             var openLi = $('#openLi',li)[0]
             var killLi = $('#killLi',li)[0]
             var viewIframe = $('#viewIframe',li)[0]
             killLi.onclick=function(ev){
+                this.parentElement.hidden=true
                 this.parentElement.parentElement.removeChild(this.parentElement)
             }
+            
             openLi.onclick=function(ev){
                 if(viewIframe.hidden){
                     viewIframe.hidden=false
@@ -213,16 +276,18 @@ docminer.search=function(q){
                     this.style.backgroundColor="cyan"
                     viewIframe.hidden=true
                 }
-                if(viewIframe.src.length==0){ // first time opened
-                    viewIframe.src='https://app.box.com/'+x.type+'/'+x.id
-                    viewIframe.width="100%"
-                    viewIframe.height="50%"
+                if(viewIframe.innerHTML.length==0){ // first time opened
+                    viewIframe.innerHTML='<p style="color:red">(waiting for same domain header to be removed)</p><iframe src="https://app.box.com/'+x.type+'/'+x.id+'" width="100%" height="50%">'
+                    //viewIframe.src='https://app.box.com/'+x.type+'/'+x.id
+                    //viewIframe.width="100%"
+                    //viewIframe.height="50%"
                 }
                 viewIframe.onerror=function(err){
                     console.log('do something about this:',this, err)
                 }
                 
             }
+            
             //debugger
         })
         //debugger
@@ -328,7 +393,7 @@ docminer.newSearchDiv=function(q){ //creates a search div
     docminer.searchDivs.push(div)
     var i = docminer.searchDivs.length
     div.i=i // the Array index would be i-1
-    var h = '<p><b style="color:maroon">Q#'+i+'</b>: <span style="color:green">'+q+'</span> <i id="minDiv" style="color:blue;background-color:yellow;cursor:pointer" class="fa fa-minus-square-o" aria-hidden="true"></i> <i id="closeDiv" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i></p>'
+    var h = '<p><b style="color:maroon">Q#'+i+'</b>: <span style="color:green">'+q+'</span> <i id="minDiv" style="color:blue;background-color:yellow;cursor:pointer" class="fa fa-minus-square-o" aria-hidden="true"></i> <i id="closeDiv" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i> <span id="entriesFound" style="color:navy"></span> </p>'
     div.innerHTML=h
     var responseDiv = document.createElement('div')
     responseDiv.id="responseDiv"
