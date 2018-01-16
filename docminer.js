@@ -193,18 +193,48 @@ docminer.search=function(q){
             var li = document.createElement('li')
             ol.appendChild(li)
             var h = x.type+' <a style="background-color:yellow;color:blue" target="_blank" href="https://app.box.com/'+x.type+'/'+x.id+'">'+x.name+'</a>'
+            h += ' <i id="openLi" style="color:blue;background-color:cyan;cursor:pointer" class="fa fa-plus-square-o" aria-hidden="true"></i> <i id="killLi" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i>'
             h += ' created by <a href="mailto:'+x.created_by.login+'">'+x.created_by.name+'</a> dated <span style="color:green" title="'+Date(x.created_at)+'">'+x.created_at.slice(0,x.created_at.indexOf('T'))+'</span>'
+            h += ' <iframe id="viewIframe" hidden=true>'
             li.innerHTML=h
+            var openLi = $('#openLi',li)[0]
+            var killLi = $('#killLi',li)[0]
+            var viewIframe = $('#viewIframe',li)[0]
+            killLi.onclick=function(ev){
+                this.parentElement.parentElement.removeChild(this.parentElement)
+            }
+            openLi.onclick=function(ev){
+                if(viewIframe.hidden){
+                    viewIframe.hidden=false
+                    this.className="fa fa-minus-square-o"
+                    this.style.backgroundColor="yellow"
+                }else{
+                    this.className="fa fa-plus-square-o"
+                    this.style.backgroundColor="cyan"
+                    viewIframe.hidden=true
+                }
+                if(viewIframe.src.length==0){ // first time opened
+                    viewIframe.src='https://app.box.com/'+x.type+'/'+x.id
+                    viewIframe.width="100%"
+                    viewIframe.height="50%"
+                }
+                viewIframe.onerror=function(err){
+                    console.log('do something about this:',this, err)
+                }
+                debugger
+            }
             //debugger
         })
         //debugger
 
         // show raw JSON in a <pre>
+        /*
         var pre = document.createElement('pre')
         responseDiv.appendChild(pre)
         pre.style.fontSize="xx-small"
         pre.style.color="green"
         pre.innerHTML=JSON.stringify(res,null,3)
+        */
         //debugger
     })
     // time to do teh search work now
