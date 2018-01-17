@@ -251,6 +251,7 @@ docminer.search=function(q){
         responseDiv.appendChild(ol)
         res.entries.forEach(function(x,i){
             var li = document.createElement('li')
+            li.entry=x
             ol.appendChild(li)
             var h = x.type+' <a style="background-color:yellow;color:blue" target="_blank" href="https://app.box.com/'+x.type+'/'+x.id+'">'+x.name+'</a>'
             h += ' <i id="openLi" style="color:blue;background-color:cyan;cursor:pointer" class="fa fa-plus-square-o" aria-hidden="true"></i> <i id="killLi" style="color:red;cursor:pointer" class="fa fa-window-close" aria-hidden="true"></i>'
@@ -277,7 +278,13 @@ docminer.search=function(q){
                     viewIframe.hidden=true
                 }
                 if(viewIframe.innerHTML.length==0){ // first time opened
-                    viewIframe.innerHTML='<p style="color:red">(waiting for same domain header to be removed)</p><iframe src="https://app.box.com/'+x.type+'/'+x.id+'" width="100%" height="50%">'
+                    //viewIframe.innerHTML='<p style="color:red">(waiting for same domain header to be removed)</p><iframe src="https://app.box.com/'+x.type+'/'+x.id+'" width="100%" height="50%">'
+                    var li = this.parentElement
+                    docminer.checkSharedLink(li.entry,function(x){
+                        li.entry=x
+                        viewIframe.innerHTML='<iframe src="'+x.shared_link.url.replace('/s/','/embed_widget/s/')+'" frameborder="0" allowfullscreen webkitallowfullscreen msallowfullscreen width="100%" height="50%"></iframe>'    
+                    })
+                    
                     //viewIframe.src='https://app.box.com/'+x.type+'/'+x.id
                     //viewIframe.width="100%"
                     //viewIframe.height="50%"
@@ -343,6 +350,31 @@ docminer.getUrl=function(url,fun){
     xhr.setRequestHeader("Cache-Control", "no-cache");
     xhr.send(data);
     */
+}
+
+docminer.checkSharedLink=function(x,fun){
+    fun=fun||console.log
+    if(typeof(x)=='string'){x={id:x}}
+    x.type=x.type||'file'
+    if(x.shared_link){
+        fun(x)
+    }else{ // create link with standard permissions
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": "https://api.box.com/2.0/"+x.type+"s/"+x.id,
+          "method": "PUT",
+          "headers": {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": "Bearer "+docminer.boxParms.access_token,
+            "Cache-Control": "no-cache",
+            "Postman-Token": "d8642c65-53df-9749-9798-c7cd1d0fb799"
+          },
+          "data": '{"shared_link":{"access":"collaborators"}}'
+        }
+
+        $.ajax(settings).done(fun);
+    }   
 }
 
 docminer.getSearch=function(q,fun){ // https://api.box.com/2.0/search
