@@ -82,7 +82,6 @@ var crystal=(div0)=>{ // ini
             }
         }
     }
-
 }
 
 crystal.divUI=(x,url)=>{
@@ -95,7 +94,7 @@ crystal.divUI=(x,url)=>{
     h += '<p><table>'
     h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
     h += '<tr><td><input id="inputName" size=70></td><td><input id="inputField" size=70></td><td></td></tr>'
-    h += '<tr><td><select id="selectReport" size=50 multiple></select></td><td><select id="selectField" size=50 multiple></select></td><td></td></tr>'
+    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td id="tdInfo" style="vertical-align:top"></td></tr>'
     h += '</table></p>'
     div.innerHTML=h
     // fill select
@@ -103,6 +102,9 @@ crystal.divUI=(x,url)=>{
     Object.keys(crystal.dt.reports).forEach((nm)=>{
         var op=document.createElement('option')
         op.textContent=nm
+        op.onmouseover=()=>{
+            crystal.onReport(op)
+        }
         selReport.appendChild(op)
     })
     var selField=div.querySelector('#selectField')
@@ -151,6 +153,15 @@ crystal.index=(x)=>{
     })
     
 
+}
+
+crystal.onReport=(op)=>{
+    var tdI = crystal.div.querySelector('#tdInfo')
+    var info=Object.keys(crystal.dt.reports[op.value]).map((v)=>{
+      var fld=crystal.dt.reports[op.value][v]
+      return v 
+    })
+    tdI.innerHTML='<h4>Report: '+op.value+'</h4>'+info.join('<br>')
 }
 
 crystal.dataUrls={
