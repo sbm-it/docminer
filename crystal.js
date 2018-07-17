@@ -75,7 +75,7 @@ var crystal=(div0)=>{ // ini
         console.log('no need to queue ini')
         ini()
     }else{
-        console.log('queing ini')
+        console.log('queuing ini')
         document.onreadystatechange=()=>{
             if(document.readyState=='complete'){
                 ini()
@@ -93,20 +93,64 @@ crystal.divUI=(x,url)=>{
     h += '<br><a href="'+url+'">'+url+'</a>'
     h += '<br>'+Date()
     h += '<p><table>'
-    h += '<tr><td>Report Name</td><td>Report Fields</td></tr>'
-    h += '<tr><td><input id="inputName"></td><td><input id="inputField"></td></tr>'
-    h += '<tr><td><select id="inputName"></select></td><td><select id="selectField"></select></td></tr>'
+    h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
+    h += '<tr><td><input id="inputName" size=70></td><td><input id="inputField" size=70></td><td></td></tr>'
+    h += '<tr><td><select id="selectReport" size=50 multiple></select></td><td><select id="selectField" size=50 multiple></select></td><td></td></tr>'
     h += '</table></p>'
     div.innerHTML=h
     // fill select
+    var selReport=div.querySelector('#selectReport')
+    Object.keys(crystal.dt.reports).forEach((nm)=>{
+        var op=document.createElement('option')
+        op.textContent=nm
+        selReport.appendChild(op)
+    })
+    var selField=div.querySelector('#selectField')
+    Object.keys(crystal.dt.fields).forEach((fld)=>{
+        var op=document.createElement('option')
+        op.textContent=fld
+        selField.appendChild(op)
+    })
+    4
 }
 
 crystal.index=(x)=>{
-    var dt={
-        names:{},
+    crystal.dt={ // note this will reset previous index if there is one
+        x:x,
+        reports:{},
         fields:{}
     }
-    4
+    // index report names
+    x.forEach((xi,i)=>{ // ith report
+        if(!crystal.dt.reports[xi.ReportName]){
+            crystal.dt.reports[xi.ReportName]={}
+        }
+        xi.reportFields.forEach((fj,j)=>{ // jth field 
+            if(!crystal.dt.reports[xi.ReportName][fj.field_name]){
+                crystal.dt.reports[xi.ReportName][fj.field_name]=[]
+            }
+            crystal.dt.reports[xi.ReportName][fj.field_name].push({
+                i:i,
+                j:j,
+                type:fj.field_type
+            })
+            // index field names
+            if(!crystal.dt.fields[fj.field_name]){
+                crystal.dt.fields[fj.field_name]={}
+            }
+            if(!crystal.dt.fields[fj.field_name][xi.ReportName]){
+                crystal.dt.fields[fj.field_name][xi.ReportName]=[]
+            }
+            crystal.dt.fields[fj.field_name][xi.ReportName].push({
+                i:i,
+                j:j,
+                tables:xi.tables
+            })
+            4
+        })
+    })
+    
+
 }
 
 crystal.dataUrls={
