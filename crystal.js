@@ -159,7 +159,11 @@ crystal.onReport=(op)=>{
     var tdI = crystal.div.querySelector('#tdInfo')
     var info=Object.keys(crystal.dt.reports[op.value]).map((v)=>{
       var fld=crystal.dt.reports[op.value][v]
-      return v 
+      var typ={}
+      fld.forEach((f)=>{
+          typ[f.type]=true
+      })
+      return v+' ('+fld.length+') ['+Object.keys(typ).join(',')+']' 
     })
     tdI.innerHTML='<h4>Report: '+op.value+'</h4>'+info.join('<br>')
 }
