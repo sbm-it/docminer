@@ -111,6 +111,9 @@ crystal.divUI=(x,url)=>{
     Object.keys(crystal.dt.fields).forEach((fld)=>{
         var op=document.createElement('option')
         op.textContent=fld
+        op.onmouseover=()=>{
+            crystal.onField(op)
+        }
         selField.appendChild(op)
     })
     4
@@ -165,7 +168,20 @@ crystal.onReport=(op)=>{
       })
       return v+' ('+fld.length+') ['+Object.keys(typ).join(',')+']' 
     })
-    tdI.innerHTML='<h4>Report: '+op.value+'</h4>'+info.join('<br>')
+    tdI.innerHTML='<h4>In the Report: "'+op.value+'" we found these Fields:</h4>'+info.join('<br>')
+}
+
+crystal.onField=(op)=>{
+    var tdI = crystal.div.querySelector('#tdInfo')
+    var info=Object.keys(crystal.dt.fields[op.value]).map((v)=>{
+      var rep=crystal.dt.fields[op.value][v]
+      var tbl={}
+      rep.forEach((rp)=>{
+          tbl[rp.tables.table_name]=true
+      })
+      return v+' ('+rep.length+') ['+Object.keys(tbl).join(',')+']' 
+    })
+    tdI.innerHTML='<h4>The Field "'+op.value+'" was found these Reports:</h4>'+info.join('<br>')
 }
 
 crystal.dataUrls={
