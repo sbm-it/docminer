@@ -19,7 +19,7 @@ var crystal=(div0)=>{ // ini
         h +='<ol>'
         h +='<li style="color:green">URL: <input> <button>Load</button></li>'
         h +='<li style="color:green">From Box: [under development]</li>'
-        h +='<li style="color:green">Available extracts: <select id="selectDemo"><option value="_">Select One:</option></select></li>'
+        h +='<li style="color:green">Available extracts: <select id="selectDemo"><option value="_">Select One:</option></select> <span style="color:red;background-color:yellow"><-- use this one for now</span></li>'
         h +='</ol>'
         h +='<h3 id="mineCrystalHeader" style="color:navy" hidden=true>Mine Crystal</h3>'
         h +='<div id="processingDiv" hidden=true><span style="color:red">processing...<span></div>'
@@ -93,13 +93,21 @@ crystal.divUI=(x,url)=>{
     h += '<br>'+Date()
     h += '<p><table>'
     h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
-    h += '<tr><td><input id="inputName" size=70></td><td><input id="inputField" size=70></td><td></td></tr>'
+    h += '<tr><td><input id="inputReport" size=70></td><td><input id="inputField" size=70></td><td></td></tr>'
     h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td id="tdInfo" style="vertical-align:top"></td></tr>'
     h += '</table></p>'
     div.innerHTML=h
     // fill select
+    var funSort=(a,b)=>{ // sort report names
+        a=a.toUpperCase(a)
+        b=b.toUpperCase(b)
+        var s=0
+        if(a>b){s=1}
+        if(a<b){s=-1}
+        return s
+    }
     var selReport=div.querySelector('#selectReport')
-    Object.keys(crystal.dt.reports).forEach((nm)=>{
+    Object.keys(crystal.dt.reports).sort(funSort).forEach((nm)=>{
         var op=document.createElement('option')
         op.textContent=nm
         op.onmouseover=()=>{
@@ -108,7 +116,7 @@ crystal.divUI=(x,url)=>{
         selReport.appendChild(op)
     })
     var selField=div.querySelector('#selectField')
-    Object.keys(crystal.dt.fields).forEach((fld)=>{
+    Object.keys(crystal.dt.fields).sort(funSort).forEach((fld)=>{
         var op=document.createElement('option')
         op.textContent=fld
         op.onmouseover=()=>{
@@ -116,7 +124,8 @@ crystal.divUI=(x,url)=>{
         }
         selField.appendChild(op)
     })
-    4
+    crystal.div.querySelector('#inputReport').onkeyup=crystal.div.querySelector('#inputReport').onclick=crystal.reportFilter
+    crystal.div.querySelector('#inputField').onkeyup=crystal.div.querySelector('#inputField').onclick=crystal.fieldFilter
 }
 
 crystal.index=(x)=>{
@@ -184,10 +193,62 @@ crystal.onField=(op)=>{
     tdI.innerHTML='<h4>The Field "'+op.value+'" was found these Reports:</h4>'+info.join('<br>')
 }
 
+crystal.selectReport=(op)=>{
+    var tdI = crystal.div.querySelector('#tdInfo')
+    var info=Object.keys(crystal.dt.reports[op.value]).map((v)=>{
+      var fld=crystal.dt.reports[op.value][v]
+      var typ={}
+      fld.forEach((f)=>{
+          typ[f.type]=true
+      })
+      return v+' ('+fld.length+') ['+Object.keys(typ).join(',')+']' 
+    })
+    tdI.innerHTML='<h4>In the Report: "'+op.value+'" we found these Fields:</h4>'+info.join('<br>')
+}
+
+crystal.selectField=(op)=>{
+    var tdI = crystal.div.querySelector('#tdInfo')
+    var info=Object.keys(crystal.dt.fields[op.value]).map((v)=>{
+      var rep=crystal.dt.fields[op.value][v]
+      var tbl={}
+      rep.forEach((rp)=>{
+          tbl[rp.tables.table_name]=true
+      })
+      return v+' ('+rep.length+') ['+Object.keys(tbl).join(',')+']' 
+    })
+    tdI.innerHTML='<h4>The Field "'+op.value+'" was found these Reports:</h4>'+info.join('<br>')
+}
+
+crystal.selectFilter=(input,select)=>{
+    var ex=input.value;if(ex.length==0){ex='.*'} // expression to match
+    var re = RegExp(ex,'i')
+    var ops = select.options
+    for(var i=0 ; i<ops.length ; i++){
+        let op=ops[i]
+        op.hidden=!op.value.match(re)
+    }
+}
+
+crystal.reportFilter=()=>{
+    crystal.selectFilter(
+        crystal.div.querySelector('#inputReport'),
+        crystal.div.querySelector('#selectReport')
+    )
+}
+
+crystal.fieldFilter=()=>{
+    crystal.selectFilter(
+        crystal.div.querySelector('#inputField'),
+        crystal.div.querySelector('#selectField')
+    )
+}
+
 crystal.dataUrls={
     'CrystalReports_dev_server.json':'/files/CrystalReports_dev_server.json',
     'CrystalReports.json':'/files/CrystalReports.json'
 }
+
+
 
 
 
