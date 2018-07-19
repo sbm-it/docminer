@@ -113,7 +113,7 @@ crystal.divUI=(x,url)=>{
     h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
     h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
     h += '</table></p>'
-    h += '<button>Plot</button>'
+    h += '<button>Graph</button> <button>Request report</button> <button>Annotate</button>'
     div.innerHTML=h
     // fill select
     var funSort=(a,b)=>{ // sort report names
@@ -345,4 +345,4 @@ crystal.dataUrls={
 
 
 // run
-crystal()
+crystal(document.body.querySelector('#crystalDiv'))
