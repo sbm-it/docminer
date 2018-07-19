@@ -93,7 +93,7 @@ crystal.divUI=(x,url)=>{
     h += '<br>'+Date()
     h += '<p><table>'
     h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
-    h += '<tr><td><input id="inputReport" size=70></td><td><input id="inputField" size=70></td><td></td></tr>'
+    h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
     h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td id="tdInfo" style="vertical-align:top"></td></tr>'
     h += '</table></p>'
     div.innerHTML=h
@@ -114,7 +114,10 @@ crystal.divUI=(x,url)=>{
             crystal.onReport(op)
         }
         selReport.appendChild(op)
+        // index option
+        crystal.dt.reportOptions[op.value]=op
     })
+    selReport.onchange=crystal.changeReport
     var selField=div.querySelector('#selectField')
     Object.keys(crystal.dt.fields).sort(funSort).forEach((fld)=>{
         var op=document.createElement('option')
@@ -123,10 +126,15 @@ crystal.divUI=(x,url)=>{
             crystal.onField(op)
         }
         selField.appendChild(op)
+        // index option
+        crystal.dt.fieldOptions[op.value]=op
     })
+    selField.onchange=crystal.changeField
     crystal.div.querySelector('#inputReport').onkeyup=crystal.div.querySelector('#inputReport').onclick=crystal.reportFilter
     crystal.div.querySelector('#inputField').onkeyup=crystal.div.querySelector('#inputField').onclick=crystal.fieldFilter
 }
+//crystal.reportOptions={}
+//crystal.fieldOptions={}
 
 crystal.index=(x)=>{
     crystal.dt={ // note this will reset previous index if there is one
@@ -160,10 +168,11 @@ crystal.index=(x)=>{
                 j:j,
                 tables:xi.tables
             })
-            4
         })
     })
-    
+    crystal.dt.reportOptions={}
+    crystal.dt.fieldOptions={}
+    crystal.x=x // <-- original data is here
 
 }
 
@@ -193,6 +202,51 @@ crystal.onField=(op)=>{
     tdI.innerHTML='<h4>The Field "'+op.value+'" was found these Reports:</h4>'+info.join('<br>')
 }
 
+crystal.changeReport=()=>{ // selections changed in 
+    var selReport=crystal.div.querySelector('#selectReport')
+    var selField=crystal.div.querySelector('#selectField')
+    // show only fields of selected reports
+    // 1. hide all fields
+    for(var i=0 ; i<selField.length ; i++){
+        selField.options[i].hidden=true
+    }
+    // 2. show only the fields of selected reports
+    for(var i=0 ; i<selReport.length ; i++){
+        let op = selReport.options[i]
+        let v = op.value
+        if(op.selected){ // find fields
+            console.log(op)
+            Object.keys(crystal.dt.reports[v]).forEach(fn=>{ // for each field name
+                crystal.dt.fieldOptions[fn].hidden=false
+            })
+            //console.log
+        }
+    }
+}
+
+crystal.changeField=()=>{ // selections changed in 
+    var selReport=crystal.div.querySelector('#selectReport')
+    var selField=crystal.div.querySelector('#selectField')
+    // show only fields of selected reports
+    // 1. hide all Reports
+    for(var i=0 ; i<selReport.length ; i++){
+        selReport.options[i].hidden=true
+    }
+    // 2. show only the Reports with the selected fields
+    for(var i=0 ; i<selField.length ; i++){
+        let op = selField.options[i]
+        let v = op.value
+        if(op.selected){ // find Reports
+            console.log(op)
+            Object.keys(crystal.dt.fields[v]).forEach(rn=>{ // for each report name 
+                crystal.dt.reportOptions[rn].hidden=false
+            })
+            //console.log
+        }
+    }
+}
+
+/*
 crystal.selectReport=(op)=>{
     var tdI = crystal.div.querySelector('#tdInfo')
     var info=Object.keys(crystal.dt.reports[op.value]).map((v)=>{
@@ -218,6 +272,7 @@ crystal.selectField=(op)=>{
     })
     tdI.innerHTML='<h4>The Field "'+op.value+'" was found these Reports:</h4>'+info.join('<br>')
 }
+*/
 
 crystal.selectFilter=(input,select)=>{
     var ex=input.value;if(ex.length==0){ex='.*'} // expression to match
