@@ -94,7 +94,7 @@ crystal.divUI=(x,url)=>{
     h += '<p><table>'
     h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
     h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
-    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td id="tdInfo" style="vertical-align:top"></td></tr>'
+    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
     h += '</table></p>'
     div.innerHTML=h
     // fill select
@@ -130,6 +130,7 @@ crystal.divUI=(x,url)=>{
         crystal.dt.fieldOptions[op.value]=op
     })
     selField.onchange=crystal.changeField
+    div.querySelector('#tdInfo').style.height=selReport.clientHeight
     crystal.div.querySelector('#inputReport').onkeyup=crystal.div.querySelector('#inputReport').onclick=crystal.reportFilter
     crystal.div.querySelector('#inputField').onkeyup=crystal.div.querySelector('#inputField').onclick=crystal.fieldFilter
 }
@@ -215,7 +216,7 @@ crystal.changeReport=()=>{ // selections changed in
         let op = selReport.options[i]
         let v = op.value
         if(op.selected){ // find fields
-            console.log(op)
+            //console.log(op)
             Object.keys(crystal.dt.reports[v]).forEach(fn=>{ // for each field name
                 crystal.dt.fieldOptions[fn].hidden=false
             })
@@ -237,7 +238,7 @@ crystal.changeField=()=>{ // selections changed in
         let op = selField.options[i]
         let v = op.value
         if(op.selected){ // find Reports
-            console.log(op)
+            //console.log(op)
             Object.keys(crystal.dt.fields[v]).forEach(rn=>{ // for each report name 
                 crystal.dt.reportOptions[rn].hidden=false
             })
