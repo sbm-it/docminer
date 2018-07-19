@@ -43,6 +43,23 @@ var crystal=(div0)=>{ // ini
         }
         console.log('ini at '+Date())
         crystal.div=div
+        setTimeout(()=>{
+            // check for search
+            if(location.search.length>1){
+                var selDemo=div.querySelector('#selectDemo')
+                let m = location.search.match(/file=([^&]+)/)
+                if(m){
+                    for(var i=0 ; i<selDemo.options.length ; i++){
+                        if(selDemo.options[i].textContent==m[1]){
+                            selDemo.options[i].selected=true
+                            selDemo.onchange()
+                            break
+                        }
+                    }
+                    4
+                }
+            }
+        },2000)
     }
 
     crystal.load=async (url)=>{
@@ -96,6 +113,7 @@ crystal.divUI=(x,url)=>{
     h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
     h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
     h += '</table></p>'
+    h += '<button>Plot</button>'
     div.innerHTML=h
     // fill select
     var funSort=(a,b)=>{ // sort report names
@@ -133,6 +151,24 @@ crystal.divUI=(x,url)=>{
     div.querySelector('#tdInfo').style.height=selReport.clientHeight
     crystal.div.querySelector('#inputReport').onkeyup=crystal.div.querySelector('#inputReport').onclick=crystal.reportFilter
     crystal.div.querySelector('#inputField').onkeyup=crystal.div.querySelector('#inputField').onclick=crystal.fieldFilter
+    // look for parameters in the query 
+    if(location.search.length>1){
+        let m = location.search.match(/report=([^&]+)/)
+        let ipRep = crystal.div.querySelector('#inputReport')
+        let ipFld = crystal.div.querySelector('#inputField')
+        if(m){
+            ipRep.value=m[1]
+            ipRep.onkeyup()
+        }
+        m = location.search.match(/field=([^&]+)/)
+        if(m){
+            ipFld.value=m[1]
+            if(ipRep.value==''){
+                ipFld.onkeyup()
+            }
+        }
+
+    }
 }
 //crystal.reportOptions={}
 //crystal.fieldOptions={}
