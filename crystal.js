@@ -16,11 +16,11 @@ var crystal=(div0)=>{ // ini
         h +='<p id="crystalIntro" style="color:green">This is a prototype <a href="https://github.com/sbm-it/docminer" target="_blank" style="background-color:yellow;color:blue">DocMiner</a> application to mine JSON exports from Crystal reports.</p>'
         h +='<h3 style="color:navy">Import Crystal JSON extract</h3>'
         h +='<p style="color:green">Use one of the methods:</p>'
-        h +='<ol>'
+        h +='<ul>'
         h +='<li style="color:green">URL: <input> <button>Load</button></li>'
         h +='<li style="color:green">From Box: [under development]</li>'
         h +='<li style="color:green">Available extracts: <select id="selectDemo"><option value="_">Select One:</option></select> <span style="color:red;background-color:yellow"><-- use this one for now</span></li>'
-        h +='</ol>'
+        h +='</ul>'
         h +='<h3 id="mineCrystalHeader" style="color:navy" hidden=true>Mine Crystal</h3>'
         h +='<div id="processingDiv" hidden=true><span style="color:red">processing...<span></div>'
         div.innerHTML=h
@@ -43,14 +43,14 @@ var crystal=(div0)=>{ // ini
         }
         console.log('ini at '+Date())
         crystal.div=div
-        setTimeout(()=>{
+        //setTimeout(()=>{
             // check for search
             if(location.search.length>1){
                 var selDemo=div.querySelector('#selectDemo')
                 let m = location.search.match(/file=([^&]+)/)
                 if(m){
                     for(var i=0 ; i<selDemo.options.length ; i++){
-                        if(selDemo.options[i].textContent==m[1]){
+                        if(selDemo.options[i].textContent==decodeURI(m[1])){
                             selDemo.options[i].selected=true
                             selDemo.onchange()
                             break
@@ -59,7 +59,7 @@ var crystal=(div0)=>{ // ini
                     4
                 }
             }
-        },2000)
+        //},2000)
     }
 
     crystal.load=async (url)=>{
@@ -109,11 +109,13 @@ crystal.divUI=(x,url)=>{
     h += '<br><a href="'+url+'">'+url+'</a>'
     h += '<br>'+Date()
     h += '<p><table>'
-    h += '<tr><td>Report Name</td><td>Report Fields</td><td>Info</td></tr>'
+    h += '<tr><td><h3 style="color:navy">Report Name</h3></td><td><h3 style="color:green">Report Fields</h3></td><td>Info</td></tr>'
     h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
-    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=50 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=50 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
+    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=30 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=30 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
     h += '</table></p>'
-    h += '<button>Graph</button> <button>Request report</button> <button>Annotate</button>'
+    //h += '<button>Graph</button> <button>Request report</button> <button>Annotate</button>'
+    h += '<button id="focusReport" class="btn btn-primary" disabled=true>Focus on report (select one first)</button>'
+    h += ' <button id="focusField" class="btn btn-success" disabled=true>Focus on field (select one first)</button>'
     div.innerHTML=h
     // fill select
     var funSort=(a,b)=>{ // sort report names
@@ -128,6 +130,7 @@ crystal.divUI=(x,url)=>{
     Object.keys(crystal.dt.reports).sort(funSort).forEach((nm)=>{
         var op=document.createElement('option')
         op.textContent=nm
+        op.style.color="navy"
         op.onmouseover=()=>{
             crystal.onReport(op)
         }
@@ -140,6 +143,7 @@ crystal.divUI=(x,url)=>{
     Object.keys(crystal.dt.fields).sort(funSort).forEach((fld)=>{
         var op=document.createElement('option')
         op.textContent=fld
+        op.style.color="green"
         op.onmouseover=()=>{
             crystal.onField(op)
         }
@@ -157,18 +161,21 @@ crystal.divUI=(x,url)=>{
         let ipRep = crystal.div.querySelector('#inputReport')
         let ipFld = crystal.div.querySelector('#inputField')
         if(m){
-            ipRep.value=m[1]
+            ipRep.value=decodeURI(m[1])
             ipRep.onkeyup()
         }
         m = location.search.match(/field=([^&]+)/)
         if(m){
-            ipFld.value=m[1]
+            ipFld.value=decodeURI(m[1])
             if(ipRep.value==''){
                 ipFld.onkeyup()
             }
         }
 
     }
+    // unhide disqus_thread
+    document.body.querySelector('#disqus_thread').hidden=false
+
 }
 //crystal.reportOptions={}
 //crystal.fieldOptions={}
@@ -248,16 +255,32 @@ crystal.changeReport=()=>{ // selections changed in
         selField.options[i].hidden=true
     }
     // 2. show only the fields of selected reports
+    var nSelected=0
+    var rSelected='' // name of the one report selected
     for(var i=0 ; i<selReport.length ; i++){
         let op = selReport.options[i]
         let v = op.value
         if(op.selected){ // find fields
+            nSelected++
             //console.log(op)
             Object.keys(crystal.dt.reports[v]).forEach(fn=>{ // for each field name
                 crystal.dt.fieldOptions[fn].hidden=false
             })
-            //console.log
+            rSelected=v 
         }
+    }
+    if(nSelected==1){
+        let bt = crystal.div.querySelector('#focusReport')
+        bt.disabled=false
+        bt.style.color='yellow'
+        bt.textContent='Focus on report "'+rSelected+'"'
+        bt.onclick=()=>{
+            window.open(location.origin+location.pathname+'?file='+crystal.div.querySelector('#selectDemo').selectedOptions[0].textContent+'&report='+encodeURI(rSelected))
+        }
+    }else{
+        bt.disabled=true
+        bt.style.color='white'
+        bt.textContent='Focus on report (select one first)'
     }
 }
 
@@ -270,16 +293,33 @@ crystal.changeField=()=>{ // selections changed in
         selReport.options[i].hidden=true
     }
     // 2. show only the Reports with the selected fields
+    var nSelected=0
+    var fSelected='' // name of the one report selected
     for(var i=0 ; i<selField.length ; i++){
         let op = selField.options[i]
         let v = op.value
         if(op.selected){ // find Reports
+            fSelected=v 
+            nSelected++
             //console.log(op)
             Object.keys(crystal.dt.fields[v]).forEach(rn=>{ // for each report name 
                 crystal.dt.reportOptions[rn].hidden=false
             })
             //console.log
         }
+    }
+    if(nSelected==1){
+        let bt = crystal.div.querySelector('#focusField')
+        bt.disabled=false
+        bt.style.color='yellow'
+        bt.textContent='Focus on field "'+fSelected+'"'
+        bt.onclick=()=>{
+            window.open(location.origin+location.pathname+'?file='+crystal.div.querySelector('#selectDemo').selectedOptions[0].textContent+'&field='+encodeURI(fSelected))
+        }
+    }else{
+        bt.disabled=true
+        bt.style.color='white'
+        bt.textContent='Focus on field (select one first)'
     }
 }
 
