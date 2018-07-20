@@ -109,14 +109,16 @@ crystal.divUI=(x,url)=>{
     h += '<br><a href="'+url+'">'+url+'</a>'
     h += '<br>'+Date()
     h += '<p><table>'
-    h += '<tr><td><h3 style="color:navy">Report Name</h3></td><td><h3 style="color:green">Report Fields</h3></td><td>Info</td></tr>'
-    h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=50></td><td></td></tr>'
-    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=30 multiple></select></td><td style="vertical-align:top"><select id="selectField" size=30 multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll"></div></td></tr>'
+    h += '<col width="30"><col width="30"><col width="30">'
+    h += '<tr><td><h3 style="color:navy">Report Name (<span id="numReports">...</span>)</h3></td><td><h3 style="color:green">Report Fields (<span id="numFields">...</span>)</h3></td><td>Info</td></tr>'
+    h += '<tr><td><input id="inputReport" size=50></td><td><input id="inputField" size=30></td><td></td></tr>'
+    h += '<tr><td style="vertical-align:top"><select id="selectReport" size=30 style="width:40em" multiple></select></td><td style="vertical-align:top"><select id="selectField" size=30 style="width:30em" multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll;width:30em"></div></td></tr>'
     h += '</table></p>'
     //h += '<button>Graph</button> <button>Request report</button> <button>Annotate</button>'
     h += '<button id="focusReport" class="btn btn-primary" disabled=true>Focus on report (select one first)</button>'
     h += ' <button id="focusField" class="btn btn-success" disabled=true>Focus on field (select one first)</button>'
     div.innerHTML=h
+    tdInfo.style.width='30em'
     // fill select
     var funSort=(a,b)=>{ // sort report names
         a=a.toUpperCase(a)
@@ -175,7 +177,8 @@ crystal.divUI=(x,url)=>{
     }
     // unhide disqus_thread
     document.body.querySelector('#disqus_thread').hidden=false
-
+    crystal.countVisibleReports()
+    crystal.countVisibleFields()
 }
 //crystal.reportOptions={}
 //crystal.fieldOptions={}
@@ -282,6 +285,7 @@ crystal.changeReport=()=>{ // selections changed in
         bt.style.color='white'
         bt.textContent='Focus on report (select one first)'
     }
+    crystal.countVisibleFields()
 }
 
 crystal.changeField=()=>{ // selections changed in 
@@ -321,6 +325,26 @@ crystal.changeField=()=>{ // selections changed in
         bt.style.color='white'
         bt.textContent='Focus on field (select one first)'
     }
+    crystal.countVisibleReports()
+}
+
+crystal.countVisibleReports=()=>{
+    var ops=crystal.div.querySelector('#selectReport').options
+    var numRep=crystal.div.querySelector('#numReports')
+    var n = 0;
+    [...Array(ops.length).keys()].forEach(i=>{
+        n+=ops[i].hidden
+    })
+    numRep.textContent=ops.length-n;
+}
+crystal.countVisibleFields=()=>{
+    var ops=crystal.div.querySelector('#selectField').options
+    var numFld=crystal.div.querySelector('#numFields')
+    var n = 0;
+    [...Array(ops.length).keys()].forEach(i=>{
+        n+=ops[i].hidden
+    })
+    numFld.textContent=ops.length-n;
 }
 
 /*
@@ -366,6 +390,7 @@ crystal.reportFilter=()=>{
         crystal.div.querySelector('#inputReport'),
         crystal.div.querySelector('#selectReport')
     )
+    crystal.countVisibleReports()
 }
 
 crystal.fieldFilter=()=>{
@@ -373,6 +398,7 @@ crystal.fieldFilter=()=>{
         crystal.div.querySelector('#inputField'),
         crystal.div.querySelector('#selectField')
     )
+    crystal.countVisibleFields()
 }
 
 crystal.dataUrls={
