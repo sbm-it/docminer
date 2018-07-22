@@ -116,7 +116,7 @@ crystal.divUI=(x,url)=>{
     h += '<tr><td style="vertical-align:top"><select id="selectReport" size=30 style="width:40em" multiple></select></td><td style="vertical-align:top"><select id="selectField" size=30 style="width:30em" multiple></select></td><td style="vertical-align:top"><div id="tdInfo" style="overflow-y:scroll;width:30em"></div></td></tr>'
     h += '</table></p>'
     //h += '<button>Graph</button> <button>Request report</button> <button>Annotate</button>'
-    h += '<button id="focusReport" class="btn btn-primary" disabled=true>Focus on report (select one first)</button>'
+    h += '<button id="focusReport" class="btn btn-primary" disabled=true>Focus on report (select one first)</button> <button id="getReport" class="btn btn-primary" disabled=true>Get it!</button>'
     h += ' <button id="focusField" class="btn btn-success" disabled=true>Focus on field (select one first)</button>'
     div.innerHTML=h
     tdInfo.style.width='30em'
@@ -273,18 +273,27 @@ crystal.changeReport=()=>{ // selections changed in
             rSelected=v 
         }
     }
+    var bt1 = crystal.div.querySelector('#focusReport')
+    var bt2 = crystal.div.querySelector('#getReport')
     if(nSelected==1){
-        let bt = crystal.div.querySelector('#focusReport')
-        bt.disabled=false
-        bt.style.color='yellow'
-        bt.textContent='Focus on report "'+rSelected+'"'
-        bt.onclick=()=>{
+        bt1.disabled=false
+        bt1.style.color='yellow'
+        bt1.textContent='Focus on report "'+rSelected+'"'
+        bt1.onclick=()=>{
             window.open(location.origin+location.pathname+'?file='+crystal.div.querySelector('#selectDemo').selectedOptions[0].textContent+'&report='+encodeURI(rSelected))
         }
+        bt2.disabled=false
+        bt2.style.color='yellow'
+        bt2.onclick=()=>{
+            window.open('https://sbm-it.github.io/dashboard/?docminer='+encodeURI(rSelected))
+        }
+
     }else{
-        bt.disabled=true
-        bt.style.color='white'
-        bt.textContent='Focus on report (select one first)'
+        bt1.disabled=true
+        bt1.style.color='white'
+        bt1.textContent='Focus on report (select one first)'
+        bt2.disabled=true
+        bt2.style.color='white'
     }
     crystal.countVisibleFields()
 }
@@ -313,8 +322,8 @@ crystal.changeField=()=>{ // selections changed in
             //console.log
         }
     }
+    var bt = crystal.div.querySelector('#focusField')
     if(nSelected==1){
-        let bt = crystal.div.querySelector('#focusField')
         bt.disabled=false
         bt.style.color='yellow'
         bt.textContent='Focus on field "'+fSelected+'"'
