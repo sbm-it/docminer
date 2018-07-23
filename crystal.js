@@ -12,7 +12,7 @@ var crystal=(div0)=>{ // ini
         }
         var div=div0||document.createElement('div')
         if(!div0){document.body.appendChild(div)}
-        var h='<h2 id="crystalAppHead" style="color:maroon">Crystal Miner <i class="fab fa-youtube" style="color:red"></i> <span style="font-size:small;color:red">(intro)<span></h2>'
+        var h='<h2 id="crystalAppHead" style="color:maroon">Crystal Miner <a href="http://www.youtube.com/watch?v=b8W-4UNziYU" target="_blank"><i class="fab fa-youtube" style="color:red"></i> <span style="font-size:small;color:red">(intro)<span></a></h2>'
         h +='<p id="crystalIntro" style="color:green">This is a prototype <a href="https://github.com/sbm-it/docminer" target="_blank" style="background-color:yellow;color:blue">DocMiner</a> application to mine JSON exports from Crystal reports.</p>'
         h +='<h3 style="color:navy">Import Crystal JSON extract</h3>'
         h +='<p style="color:green">Use one of the methods:</p>'
